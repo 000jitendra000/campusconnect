@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusConnect | Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #f4f7fb; }
+    .admin-wrap { max-width: 1150px; margin: 35px auto; padding: 20px; }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .admin-header h1 { margin-bottom: 5px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 18px; margin: 25px 0; }
+    .stat-card, .panel { background: white; padding: 22px; border-radius: 14px; box-shadow: 0 4px 18px #1725540d; }
+    .stat-card p { margin: 0 0 8px; color: #64748b; }
+    .stat-card h2 { margin: 0; color: #2563eb; font-size: 30px; }
+    .panel { margin-bottom: 25px; overflow: hidden; }
+    .panel h2 { margin-top: 0; }
+    .event-form { display: grid; gap: 13px; }
+    .event-form input, .event-form textarea, .event-form select {
+      width: 100%; padding: 12px; border: 1px solid #cbd5e1;
+      border-radius: 8px; font: inherit; box-sizing: border-box;
+    }
+    .event-form textarea { min-height: 100px; resize: vertical; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    button { cursor: pointer; padding: 10px 15px; border: 0; border-radius: 8px; font: inherit; }
+    .primary { background: #2563eb; color: white; }
+    .secondary { background: #e2e8f0; color: #0f172a; }
+    .danger { background: #fee2e2; color: #b91c1c; }
+    .message { margin: 12px 0; }
+    .success-text { color: #15803d; }
+    .error-text { color: #b91c1c; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; min-width: 650px; }
+    th, td { padding: 13px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    th { background: #f8fafc; }
+    .muted { color: #64748b; }
+    .event-description { max-width: 320px; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap">
+    <header class="admin-header">
+      <div>
+        <h1>CampusConnect Admin</h1>
+        <p class="muted">Manage Mohana Mantra events and registrations.</p>
+      </div>
+      <button id="logout-btn" class="danger" type="button">Logout</button>
+    </header>
+
+    <p id="page-message" class="message" role="status" aria-live="polite"></p>
+
+    <section class="stats">
+      <div class="stat-card">
+        <p>Total Events</p>
+        <h2 id="total-events">0</h2>
+      </div>
+      <div class="stat-card">
+        <p>Total Registrations</p>
+        <h2 id="total-registrations">0</h2>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 id="form-heading">Create Event</h2>
+      <form id="event-form" class="event-form">
+        <input id="event-title" name="title" placeholder="Event title" maxlength="150" required>
+        <select id="event-category" name="category" required>
+          <option value="">Select category</option>
+          <option value="Technical">Technical</option>
+          <option value="Cultural">Cultural</option>
+          <option value="Sports">Sports</option>
+          <option value="Workshop">Workshop</option>
+          <option value="Other">Other</option>
+        </select>
+        <textarea id="event-description" name="description" placeholder="Event description" maxlength="3000" required></textarea>
+        <div class="actions">
+          <button class="primary" id="save-event-btn" type="submit">Create Event</button>
+          <button class="secondary" id="cancel-edit-btn" type="button" hidden>Cancel Edit</button>
+        </div>
+      </form>
+      <p id="form-message" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Manage Events</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Event</th>
+              <th>Category</th>
+              <th>Registrations</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="events-body">
+            <tr><td colspan="5">Loading events...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Student Registrations</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Student</th>
+              <th>Email</th>
+              <th>Event</th>
+              <th>Registered At</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="registrations-body">
+            <tr><td colspan="6">Loading registrations...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    let events = [];
+    let registrations = [];
+    let editingId = null;
+
+    async function api(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          ...(options.body ? { "Content-Type": "application/json" } : {}),
+          ...options.headers
+        }
+      });
+
+      if (response.status === 401) {
+        window.location.href = "/admin-login.html";
+        throw new Error("Your admin session has expired. Please log in again.");
+      }
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Request failed.");
+      }
+
+      return data;
+    }
+
+    function showMessage(element, message, isError = false) {
+      element.textContent = message;
+      element.className = "message " + (isError ? "error-text" : "success-text");
+    }
+
+    function makeCell(text) {
+      const td = document.createElement("td");
+      td.textContent = text ?? "";
+      return td;
+    }
+
+    function makeButton(label, className, handler) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = label;
+      button.className = className;
+      button.addEventListener("click", handler);
+      return button;
+    }
+
+    function resetForm() {
+      editingId = null;
+      $("event-form").reset();
+      $("form-heading").textContent = "Create Event";
+      $("save-event-btn").textContent = "Create Event";
+      $("cancel-edit-btn").hidden = true;
+      $("form-message").textContent = "";
+      $("form-message").className = "message";
+    }
+
+    function startEdit(eventId) {
+      const event = events.find(item => Number(item.id) === Number(eventId));
+      if (!event) return;
+
+      editingId = event.id;
+      $("event-title").value = event.title;
+      $("event-category").value = event.category;
+      $("event-description").value = event.description;
+      $("form-heading").textContent = "Edit Event";
+      $("save-event-btn").textContent = "Save Changes";
+      $("cancel-edit-btn").hidden = false;
+      $("form-message").textContent = "";
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderEvents() {
+      const body = $("events-body");
+      body.replaceChildren();
+
+      if (!events.length) {
+        const row = document.createElement("tr");
+        const cell = makeCell("No events created yet.");
+        cell.colSpan = 5;
+        row.append(cell);
+        body.append(row);
+        return;
+      }
+
+      events.forEach(event => {
+        const row = document.createElement("tr");
+        const count = registrations.filter(
+          registration => Number(registration.event_id) === Number(event.id)
+        ).length;
+
+        row.append(
+          makeCell(event.id),
+          makeCell(event.title),
+          makeCell(event.category),
+          makeCell(count)
+        );
+
+        const actions = document.createElement("td");
+        const actionWrap = document.createElement("div");
+        actionWrap.className = "actions";
+
+        actionWrap.append(
+          makeButton("Edit", "secondary", () => startEdit(event.id)),
+          makeButton("Delete", "danger", () => deleteEvent(event.id, event.title))
+        );
+
+        actions.append(actionWrap);
+        row.append(actions);
+        body.append(row);
+      });
+    }
+
+    function renderRegistrations() {
+      const body = $("registrations-body");
+      body.replaceChildren();
+
+      if (!registrations.length) {
+        const row = document.createElement("tr");
+        const cell = makeCell("No registrations yet.");
+        cell.colSpan = 6;
+        row.append(cell);
+        body.append(row);
+        return;
+      }
+
+      registrations.forEach(registration => {
+        const row = document.createElement("tr");
+        const date = registration.registered_at
+          ? registration.registered_at
+          : "—";
+
+        row.append(
+          makeCell(registration.id),
+          makeCell(registration.student_name),
+          makeCell(registration.student_email),
+          makeCell(registration.event_title),
+          makeCell(date)
+        );
+
+        const actions = document.createElement("td");
+        actions.append(
+          makeButton("Remove", "danger", () => deleteRegistration(registration.id))
+        );
+        row.append(actions);
+        body.append(row);
+      });
+    }
+
+    async function loadDashboard() {
+      const results = await Promise.all([
+        api("/api/events"),
+        api("/api/registrations"),
+        api("/api/registrations/stats")
+      ]);
+
+      events = results[0];
+      registrations = results[1];
+
+      $("total-events").textContent = results[2].totalEvents ?? events.length;
+      $("total-registrations").textContent =
+        results[2].totalRegistrations ?? registrations.length;
+
+      renderEvents();
+      renderRegistrations();
+    }
+
+    async function deleteEvent(id, title) {
+      if (!confirm(
+        `Delete "${title}" and all its registrations? This cannot be undone.`
+      )) return;
+
+      try {
+        const result = await api(`/api/events/${id}`, { method: "DELETE" });
+        if (Number(editingId) === Number(id)) resetForm();
+        await loadDashboard();
+        showMessage($("page-message"), result.message);
+      } catch (error) {
+        showMessage($("page-message"), error.message, true);
+      }
+    }
+
+    async function deleteRegistration(id) {
+      if (!confirm("Remove this student registration?")) return;
+
+      try {
+        const result = await api(`/api/registrations/${id}`, {
+          method: "DELETE"
+        });
+        await loadDashboard();
+        showMessage($("page-message"), result.message);
+      } catch (error) {
+        showMessage($("page-message"), error.message, true);
+      }
+    }
+
+    $("event-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const payload = {
+        title: $("event-title").value.trim(),
+        category: $("event-category").value,
+        description: $("event-description").value.trim()
+      };
+
+      const wasEditing = editingId !== null;
+      const url = wasEditing ? `/api/events/${editingId}` : "/api/events";
+      const method = wasEditing ? "PUT" : "POST";
+
+      try {
+        const result = await api(url, {
+          method,
+          body: JSON.stringify(payload)
+        });
+
+        resetForm();
+        await loadDashboard();
+        showMessage($("page-message"), result.message);
+      } catch (error) {
+        showMessage($("form-message"), error.message, true);
+      }
+    });
+
+    $("cancel-edit-btn").addEventListener("click", resetForm);
+
+    $("logout-btn").addEventListener("click", async () => {
+      try {
+        await api("/api/admin/logout", { method: "POST" });
+        window.location.href = "/admin-login.html";
+      } catch (error) {
+        showMessage($("page-message"), error.message, true);
+      }
+    });
+
+    loadDashboard().catch(error => {
+      showMessage($("page-message"), error.message, true);
+    });
+  </script>
+</body>
+</html>

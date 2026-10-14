@@ -1,0 +1,153 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+    <meta name="description" content="Discover campus events, competitions, workshops and Mohana Mantra at Mohan Babu University.">
+    <title>CampusConnect | Mohan Babu University</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+    <a href="#home" class="brand">CampusConnect<span>.</span></a>
+    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav" type="button">☰</button>
+    <nav class="main-nav" id="main-nav">
+        <a href="#home">Home</a>
+        <a href="#events">Campus Events</a>
+        <a href="#mohana-mantra">Mohana Mantra</a>
+        <a href="/admin-login.html">Admin</a>
+    </nav>
+</header>
+
+<main>
+    <section id="home" class="hero-section">
+        <p class="hero-eyebrow">MOHAN BABU UNIVERSITY PRESENTS</p>
+        <h1>Your Campus.<br>Your Moments.<br><span>Your Story.</span></h1>
+        <p class="hero-description">Discover campus events, explore new opportunities, find your people, and make every moment count.</p>
+        <div class="hero-actions">
+            <a href="#events" class="hero-button primary">Explore Events ↗</a>
+            <a href="#mohana-mantra" class="hero-button secondary">Discover Mohana Mantra</a>
+        </div>
+        <div class="hero-stats">
+            <div><strong>01</strong><span>Discover</span></div>
+            <div><strong>02</strong><span>Participate</span></div>
+            <div><strong>03</strong><span>Remember</span></div>
+        </div>
+    </section>
+
+    <section id="mohana-mantra" class="festival-section">
+        <p class="festival-label">THE SIGNATURE ANNUAL FESTIVAL</p>
+        <h2>MOHANA <span>MANTRA</span></h2>
+        <h3>Three Days. One Campus. Endless Memories.</h3>
+        <p class="festival-description">Experience the energy of Mohan Babu University through technical challenges, cultural competitions, exciting spot events, live performances, and DJ night.</p>
+
+        <div class="festival-highlights">
+            <div><span>01</span><p>TECH &amp; INNOVATION</p></div>
+            <div><span>02</span><p>SPOT EVENTS</p></div>
+            <div><span>03</span><p>BAND &amp; DJ NIGHT</p></div>
+        </div>
+
+        <div class="festival-schedule">
+            <h3>Explore the Three Days</h3>
+            <div class="day-tabs">
+                <button class="day-tab active" data-day="1" type="button" aria-pressed="true">DAY 01</button>
+                <button class="day-tab" data-day="2" type="button" aria-pressed="false">DAY 02</button>
+                <button class="day-tab" data-day="3" type="button" aria-pressed="false">DAY 03</button>
+            </div>
+            <div class="day-content" id="day-content" aria-live="polite">
+                <h4>Day 1 — The Beginning</h4>
+                <p>Discover technical challenges, non-technical competitions, and exciting spot events.</p>
+            </div>
+        </div>
+        <a href="#events" class="festival-button">EXPLORE CAMPUS EVENTS ↗</a>
+    </section>
+
+    <section id="events" class="events-section">
+        <p class="section-eyebrow">FIND YOUR NEXT EXPERIENCE</p>
+        <h2>Explore Campus Events</h2>
+        <p class="section-description">From technical competitions to cultural celebrations, your next experience starts here.</p>
+
+        <div class="event-container featured-events">
+            <article class="event-card">
+                <span class="event-category">TECHNICAL</span>
+                <h3>Code Challenge</h3>
+                <p>Test your programming and problem-solving skills.</p>
+                <a href="#event-list" class="card-link">Explore database events ↓</a>
+            </article>
+            <article class="event-card">
+                <span class="event-category">CULTURAL</span>
+                <h3>Mohana Mantra</h3>
+                <p>Three days of campus celebrations and unforgettable experiences.</p>
+                <a href="#mohana-mantra" class="card-link">Discover the festival ↓</a>
+            </article>
+            <article class="event-card">
+                <span class="event-category">WORKSHOP</span>
+                <h3>Innovation Lab</h3>
+                <p>Learn new skills and turn creative ideas into projects.</p>
+                <a href="#event-list" class="card-link">Explore database events ↓</a>
+            </article>
+        </div>
+
+        <div class="database-events">
+            <p class="section-eyebrow">LIVE FROM YOUR DATABASE</p>
+            <h2>Find Campus Events</h2>
+            <p class="section-description">Search events, filter categories, and register for activities.</p>
+
+            <div class="event-tools">
+                <input type="search" id="event-search" placeholder="Search campus events..." aria-label="Search campus events">
+                <select id="event-filter" aria-label="Filter events by category">
+                    <option value="all">All Categories</option>
+                    <option value="technical">Technical</option>
+                    <option value="cultural">Cultural</option>
+                    <option value="workshop">Workshop</option>
+                    <option value="sports">Sports</option>
+                </select>
+            </div>
+
+            <div id="event-list" class="event-container">
+                <p>Loading campus events...</p>
+            </div>
+        </div>
+
+        <div class="add-event-form">
+            <p class="section-eyebrow">GROW THE CAMPUS COMMUNITY</p>
+            <h3>Add a Campus Event</h3>
+            <p class="section-description">Create an event listing for your campus community.</p>
+            <form id="add-event-form">
+                <input type="text" id="event-title" name="title" placeholder="Event title" maxlength="150" required>
+                <input type="text" id="event-category" name="category" placeholder="Category (Technical, Cultural...)" maxlength="80" required>
+                <textarea id="event-description" name="description" placeholder="Event description" maxlength="2000" required></textarea>
+                <button type="submit">Add Event ↗</button>
+                <p id="form-message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <h2>CampusConnect<span>.</span></h2>
+            <p>Your campus. Your moments. Your story.</p>
+            <p>Mohan Babu University</p>
+        </div>
+        <div class="footer-links">
+            <h3>Quick Links</h3>
+            <a href="#home">Home</a>
+            <a href="#events">Campus Events</a>
+            <a href="#mohana-mantra">Mohana Mantra</a>
+            <a href="/admin-login.html">Admin Login</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 CampusConnect · A Student Project</p>
+        <p>Made for the MBU campus community.</p>
+    </div>
+</footer>
+
+<div id="backend-status" class="backend-status" role="status" aria-live="polite">Checking CampusConnect server...</div>
+<script src="script.js"></script>
+</body>
+</html>

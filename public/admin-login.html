@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusConnect Admin Login</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #101827, #243b67);
+      color: #fff;
+      padding: 20px;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+      padding: 32px;
+      border-radius: 16px;
+      background: #fff;
+      color: #172033;
+      box-shadow: 0 15px 40px #0004;
+    }
+    h1 { margin-top: 0; }
+    p { color: #64748b; }
+    label { display: block; margin: 18px 0 7px; }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 13px;
+      border: 0;
+      border-radius: 8px;
+      background: #315de8;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; }
+    #message { margin-top: 16px; color: #c62828; }
+  </style>
+</head>
+<body>
+  <main class="login-box">
+    <h1>CampusConnect</h1>
+    <p>Administrator sign in</p>
+
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username"
+             required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password"
+             autocomplete="current-password" required>
+
+      <button id="loginButton" type="submit">Sign in</button>
+      <div id="message" role="alert"></div>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+    const button = document.getElementById("loginButton");
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      message.textContent = "";
+      button.disabled = true;
+      button.textContent = "Signing in...";
+
+      try {
+        const response = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: document.getElementById("username").value.trim(),
+            password: document.getElementById("password").value
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || result.error || "Login failed.");
+        }
+
+        window.location.href = "/admin.html";
+      } catch (error) {
+        message.textContent =
+          error.message || "Could not connect to the server.";
+        button.disabled = false;
+        button.textContent = "Sign in";
+      }
+    });
+  </script>
+</body>
+</html>
